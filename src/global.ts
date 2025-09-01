@@ -6,7 +6,7 @@ dotenv.config();
 // Static numbers
 export const dragonsHeadId = '360287970202488740'
 export const dragonsTailId = '360287970204104859'
-export const bigCraftThreshold = 50000
+export const bigCraftThreshold = 1
 export const fruitRecourceId = 182331452
 export const waystoneBuildingId = 205715693
 
@@ -175,8 +175,8 @@ export async function sendWebhookMessage(data: 'init' | 'wsError' | 'wsDisconnec
 	} else {
 		targetChat = 'craft'
 		let desc = ''
-		if (data.empire) desc = `**Owner:** \`${data.owner}\`\\n**Empire:** \`${data.empire}\`\\n**Effort:** \`${data.effort}\` (Tier ${data.tier})\\n**Station:** \`${data.station}\`\\n**Location:** \`${data.location}\``
-		else desc = `**Owner:** \`${data.owner}\`\\n**Effort:** \`${data.effort}\` (Tier ${data.tier})\\n**Station:** \`${data.station}\`\\n**Location:** \`${data.location}\``
+		if (data.empire) desc = `**Owner:** \`${data.owner}\`\\n**Empire:** \`${data.empire}\`\\n**Effort:** \`${data.effort.toLocaleString('en-US')}\` (Tier ${data.tier})\\n**Station:** \`${data.station}\`\\n**Location:** \`${data.location}\``
+		else desc = `**Owner:** \`${data.owner}\`\\n**Effort:** \`${data.effort.toLocaleString('en-US')}\` (Tier ${data.tier})\\n**Station:** \`${data.station}\`\\n**Location:** \`${data.location}\``
 		
 		content = format(webhookMessage, {title: "Big Craft started!", description: desc, url: '', color: colorGreen})
 	}

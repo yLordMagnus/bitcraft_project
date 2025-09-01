@@ -1,14 +1,14 @@
-import { DbConnection, ErrorContext } from 'bitcraft_bindings/ts';
+import { DbConnection, ErrorContext } from 'bitcraft_bindings';
 import { ErrorContextInterface, Identity } from "stdb_sdk";
-import { LocationStateInsert, LocationStateDelete } from './subscriptions/locationStateSub'
-import { ResourceStateInsert, ResourceStateDelete } from './subscriptions/resourceStateSub'
-import { ProgressiveActionStateInsert } from './subscriptions/progressiveActionStateSub'
-import { PlayerUsernameStateDelete, PlayerUsernameStateInsert, PlayerUsernameStateUpdate } from './subscriptions/playerUsernameStateSub'
-import { BuildingStateDelete, BuildingStateInsert } from './subscriptions/buildingStateSub'
-import { EmpirePlayerDataStateDelete, EmpirePlayerDataStateInsert } from './subscriptions/empirePlayerDataStateSub'
-import { EmpireStateDelete, EmpireStateInsert, EmpireStateUpdate } from './subscriptions/empireStateSub'
-import { ClaimStateDelete, ClaimStateInsert } from './subscriptions/claimStateSub'
-import { dragonsHeadId, dragonsTailId, fruitRecourceId, loadBuildingDesc, waystoneBuildingId, loadRecipeDesc, sendWebhookMessage, scheduleShutdown } from './global'
+import { LocationStateInsert, LocationStateDelete } from './subscriptions/locationStateSub.js'
+import { ResourceStateInsert, ResourceStateDelete } from './subscriptions/resourceStateSub.js'
+import { ProgressiveActionStateInsert } from './subscriptions/progressiveActionStateSub.js'
+import { PlayerUsernameStateDelete, PlayerUsernameStateInsert, PlayerUsernameStateUpdate } from './subscriptions/playerUsernameStateSub.js'
+import { BuildingStateDelete, BuildingStateInsert } from './subscriptions/buildingStateSub.js'
+import { EmpirePlayerDataStateDelete, EmpirePlayerDataStateInsert } from './subscriptions/empirePlayerDataStateSub.js'
+import { EmpireStateDelete, EmpireStateInsert, EmpireStateUpdate } from './subscriptions/empireStateSub.js'
+import { ClaimStateDelete, ClaimStateInsert } from './subscriptions/claimStateSub.js'
+import { dragonsHeadId, dragonsTailId, fruitRecourceId, loadBuildingDesc, waystoneBuildingId, loadRecipeDesc, sendWebhookMessage, scheduleShutdown } from './global.js'
 import c from 'chalk'
 import dotenv from 'dotenv'
 dotenv.config();
@@ -110,3 +110,15 @@ try {
 	sendWebhookMessage('codeError')
 	scheduleShutdown()
 }
+
+/**
+ *! TODO
+ *? Make it a discord bot
+ *? Add a resource tracker (make a bitcraftmap.com link of a resource, using gist)
+ *? Add a enemy tracker (same as above, but for herds)
+ *? Add player profiles (can use ranking from bitjita api, since I lack access to other regions)
+ *
+ *! DONE
+ ** Traveler's Fruit Tracker 
+ ** Big Craft Tracker (Should add commands for the threshold to be set manually when it turns into a bot)
+ */

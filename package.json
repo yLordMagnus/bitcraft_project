@@ -2,10 +2,11 @@
   "name": "bitcraft_ts",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node --max-old-space-size=3072 dist/index.js",
-    "dev": "node --max-old-space-size=3072 --expose-gc -r ts-node/register src/index.ts",
+    "start": "node --max-old-space-size=100 --expose-gc dist/index.js",
+    "dev": "node --max-old-space-size=100 --expose-gc -r ts-node/register src/index.ts",
     "watch": "tsc --watch",
     "dev:watch": "nodemon --exec ts-node src/index.ts"
   },
@@ -25,9 +26,11 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "stdb_sdk": "file:sdk",
+    "@zxing/text-encoding": "^0.9.0",
+    "base64-js": "^1.5.1",
     "bitcraft_bindings": "file:BitCraft_Bindings",
     "discord.js": "^14.22.1",
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "stdb_sdk": "file:sdk"
   }
 }

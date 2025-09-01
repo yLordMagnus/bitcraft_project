@@ -1,5 +1,5 @@
-import { EventContext, PlayerUsernameState } from 'bitcraft_bindings/ts';
-import { playerUsernames } from '../global';
+import { EventContext, PlayerUsernameState } from 'bitcraft_bindings';
+import { playerUsernames } from '../global.js';
 
 export const PlayerUsernameStateInsert = (ctx: EventContext, row: PlayerUsernameState) => {
     playerUsernames.set(row.entityId.toString(), row.username)

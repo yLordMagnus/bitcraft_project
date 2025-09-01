@@ -1,5 +1,5 @@
-import { EventContext, EmpireState } from 'bitcraft_bindings/ts';
-import { empires } from '../global';
+import { EventContext, EmpireState } from 'bitcraft_bindings';
+import { empires } from '../global.js';
 
 export const EmpireStateInsert = (ctx: EventContext, row: EmpireState) => {
     empires.set(row.entityId.toString(), row.name)

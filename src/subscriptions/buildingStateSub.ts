@@ -1,5 +1,5 @@
-import { EventContext, BuildingState } from 'bitcraft_bindings/ts';
-import { buildings } from '../global';
+import { EventContext, BuildingState } from 'bitcraft_bindings';
+import { buildings } from '../global.js';
 
 export const BuildingStateInsert = (ctx: EventContext, row: BuildingState) => {
     buildings.set(row.entityId.toString(), row.claimEntityId.toString())

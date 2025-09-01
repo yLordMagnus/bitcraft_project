@@ -1,5 +1,5 @@
-import { EventContext, LocationState } from 'bitcraft_bindings/ts';
-import { LocationStateQueue, packLocation, timeout } from '../global'
+import { EventContext, LocationState } from 'bitcraft_bindings';
+import { LocationStateQueue, packLocation, timeout } from '../global.js'
 
 export const LocationStateInsert = (ctx: EventContext, row: LocationState) => {
 	const id = row.entityId.toString()

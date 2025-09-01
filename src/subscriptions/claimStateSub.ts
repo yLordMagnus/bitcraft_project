@@ -1,5 +1,5 @@
-import { EventContext, BuildingState, ClaimState } from 'bitcraft_bindings/ts';
-import { claimsWithWaystones } from '../global';
+import { EventContext, BuildingState, ClaimState } from 'bitcraft_bindings';
+import { claimsWithWaystones } from '../global.js';
 
 export const ClaimStateInsert = (ctx: EventContext, row: ClaimState) => { 
     claimsWithWaystones.set(row.entityId.toString(), row.name)

@@ -1,5 +1,5 @@
-import { EventContext, ResourceState } from 'bitcraft_bindings/ts';
-import { timeout, ResourceStateQueue, resourceLocations, sendWebhookMessage } from '../global'
+import { EventContext, ResourceState } from 'bitcraft_bindings';
+import { timeout, ResourceStateQueue, resourceLocations, sendWebhookMessage } from '../global.js'
 
 export const ResourceStateInsert = (ctx: EventContext, row: ResourceState) => {
 	const id = row.entityId.toString()

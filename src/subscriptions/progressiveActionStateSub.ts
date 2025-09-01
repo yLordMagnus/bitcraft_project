@@ -1,5 +1,5 @@
-import { EventContext, ProgressiveActionState } from 'bitcraft_bindings/ts';
-import { craftingRecipes, dragonsHeadId, dragonsTailId, playerUsernames, sendWebhookMessage, CraftInfo, bigCraftThreshold, empirePlayerData, buildings, empires } from '../global';
+import { EventContext, ProgressiveActionState } from 'bitcraft_bindings';
+import { craftingRecipes, dragonsHeadId, dragonsTailId, playerUsernames, sendWebhookMessage, CraftInfo, bigCraftThreshold, empirePlayerData, buildings, empires } from '../global.js';
 
 export const ProgressiveActionStateInsert = (ctx: EventContext, row: ProgressiveActionState) => {
 	if (ctx.event.tag === 'SubscribeApplied') return;							//? Ignore the initial sub reply
