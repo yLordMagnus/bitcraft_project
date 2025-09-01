@@ -9,15 +9,15 @@ import { EmpirePlayerDataStateDelete, EmpirePlayerDataStateInsert } from './subs
 import { EmpireStateDelete, EmpireStateInsert, EmpireStateUpdate } from './subscriptions/empireStateSub'
 import { ClaimStateDelete, ClaimStateInsert } from './subscriptions/claimStateSub'
 import { dragonsHeadId, dragonsTailId, fruitRecourceId, loadBuildingDesc, waystoneBuildingId, loadRecipeDesc, sendWebhookMessage, scheduleShutdown } from './global'
-import dotenv from 'dotenv'
 import c from 'chalk'
-
+import dotenv from 'dotenv'
 dotenv.config();
+
 try {
 	const onConnect = (conn: DbConnection, identity: Identity, token: string) => {
 		const startTime = Date.now()
 		setInterval(() => { if (global.gc) global.gc() }, 300000) // Call a GC every 5 minutes
-		setTimeout(() => { if (global.gc) global.gc(); console.log(`${process.memoryUsage}mb`) }, 10000) // Call a GC after 10 seconds
+		setTimeout(() => { if (global.gc) global.gc(); console.log(c.bold.cyan(`# Memory in first GC: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(0)}mb`))}, 10000) // Call a GC after 10 seconds
 
 		loadBuildingDesc()
 		loadRecipeDesc()
@@ -53,6 +53,7 @@ try {
 
 				console.log(c.green(`<<< Subscribed [${Date.now()-startTime}ms]`))
 				sendWebhookMessage('init')
+				setTimeout(() => {sendWebhookMessage('fruit')}, 5000)
 			})
 			.onError((ctx: ErrorContextInterface) => console.log(c.red(`<<< Subscriptions failed:\n${ctx.event?.stack}`)))
 			.subscribe([
@@ -70,6 +71,7 @@ try {
 				//* 5. Gets a list of all public_progressive_action_state (uses all of the above)
 				//?#################################################################################################################################################################
 				`SELECT c.* FROM claim_state c JOIN building_state b ON c.entity_id=b.claim_entity_id WHERE b.building_description_id=${waystoneBuildingId};`,
+				`SELECT b.* FROM claim_state c JOIN building_state b ON c.entity_id=b.claim_entity_id WHERE b.building_description_id=${waystoneBuildingId};`,
 				`SELECT l.* FROM location_state l JOIN building_state b ON l.entity_id=b.entity_id WHERE b.building_description_id=${waystoneBuildingId} AND b.claim_entity_id!=0`,
 				`SELECT r.* FROM resource_state r JOIN location_state l ON r.entity_id=l.entity_id WHERE r.resource_id=${fruitRecourceId};`,
 				`SELECT l.* FROM resource_state r JOIN location_state l ON r.entity_id=l.entity_id WHERE r.resource_id=${fruitRecourceId};`,

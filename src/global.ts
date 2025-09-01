@@ -1,5 +1,7 @@
 import { readFileSync } from 'fs'
 import c from 'chalk'
+import dotenv from 'dotenv'
+dotenv.config();
 
 // Static numbers
 export const dragonsHeadId = '360287970202488740'
@@ -14,8 +16,9 @@ const colorGreen = 32768
 const colorYellow = 8421376
 
 // Used for links
-const fruitTrackerLink = 'https://bitcraftmap.com/?#{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"iconName":"waypoint"},"geometry":{"type":"MultiPoint","coordinates":[{coordinates}]}}]}'
-const webhookMessage = '{{"content": null,"embeds": [{{"title": "{title}","description": "{description}","url": "{url}","color": {color}}}],"attachments": []}}'
+const fruitTrackerLink = 'https://bitcraftmap.com/?#'
+const fruitTrackerURIComponent = '{%22type%22:%22FeatureCollection%22,%22features%22:[{%22type%22:%22Feature%22,%22properties%22:{%22iconName%22:%22waypoint%22},%22geometry%22:{%22type%22:%22MultiPoint%22,%22coordinates%22:[{coordinates}]}}]}'
+const webhookMessage = '{"content": null,"embeds": [{"title": "{title}","description": "{description}","url": "{url}","color": {color}}],"attachments": []}'
 export const bigCraftWebhookLink = process.env.BIG_CRAFT_TRACKER_WEBHOOK
 export const fruitTrackerWebhookLink = process.env.FRUIT_TRACKER_WEBHOOK
 
@@ -47,18 +50,18 @@ function format(string: string, values: Record<string, any>) {
 }
 
 export function loadBuildingDesc() {
-	const buildingsData = JSON.parse(readFileSync('./utils/buildingNames.jsonl', 'utf8')) as { id: number, name: string }[];
+	const buildingsData = JSON.parse(readFileSync('./utils/buildingTypes.jsonl', 'utf8')) as { id: number, name: string }[];
 	for (let buildingInfo of buildingsData) {
 		buildingTypes.set(buildingInfo.id.toString(), buildingInfo.name)
 	}
 }
 
 export function loadRecipeDesc() {
-	const recipesData = JSON.parse(readFileSync('./utils/craftingRecipes.jsonl', 'utf8')) as { id: string, building_type: string, tier: string, actions_required: number}[];
+	const recipesData = JSON.parse(readFileSync('./utils/craftingRecipes.jsonl', 'utf8')) as { id: number, building_type: number, tier: number, actions_required: number}[];
 	for (let recipe of recipesData) {
-		const buildingName = buildingTypes.get(recipe.building_type)
-		if (!buildingName) return;
-		craftingRecipes.set(recipe.id, [buildingName, recipe.tier, recipe.actions_required])
+		const buildingName = buildingTypes.get(recipe.building_type.toString())
+		if (!buildingName) continue;
+		craftingRecipes.set(recipe.id.toString(), [buildingName, recipe.tier.toString(), recipe.actions_required])
 	}
 }
 
@@ -78,11 +81,14 @@ export function timeout(id: string) {
 	const timeout = setTimeout(()=> {
 		const res = ResourceStateQueue.get(id) // Get stored resource id
 		const loc = LocationStateQueue.get(id) // Get stored packd location
-		const bld = buildings.get(id)
+		const bld = buildings.get(id) // get claim id
 
-		// LOC + BLD = Building location (used for waystone tracking)
-		if (loc && bld) {
-			waystoneLocations.set(id, [bld, loc])
+		if (bld) {
+			const claimName = claimsWithWaystones.get(bld) // get claim name
+			// For waystone tracking
+			if (loc && claimName) {
+				waystoneLocations.set(id, [bld, loc])
+			}
 		}
 		
 		// LOC + RES = Resource Location (used for resource tracking)
@@ -117,66 +123,74 @@ export async function sendWebhookMessage(data: 'init' | 'wsError' | 'wsDisconnec
 	if (typeof data === 'string') {
 		switch (data) {
 			case 'init':
-				content = format(webhookMessage, {title: 'Service is back online!', description:'Service offline!\nRestarting in 10 minutes...', url: '', color: colorRed})
+				content = format(webhookMessage, {title: 'Service is back online!', description:'', url: '', color: colorGreen})
 				break;
 			case 'wsError':
-				content = format(webhookMessage, {title: 'Websocket Exception!', description:'Service offline!\nRestarting in 10 minutes...', url: '', color: colorRed})
+				content = format(webhookMessage, {title: 'Websocket Exception!', description:'Service offline!\\nRestarting in 10 minutes...', url: '', color: colorRed})
 				break;
 			case 'wsDisconnect':
-				content = format(webhookMessage, {title: 'Websocket Disconnected!', description:'Service offline!\nRestarting in 10 minutes...', url: '', color: colorRed})
+				content = format(webhookMessage, {title: 'Websocket Disconnected!', description:'Service offline!\\nRestarting in 10 minutes...', url: '', color: colorRed})
 				break;
 			case 'codeError':
-				content = format(webhookMessage, {title: 'Code Exception!', description:'Service offline!\nRestarting in 10 minutes...', url: '', color: colorRed})
+				content = format(webhookMessage, {title: 'Code Exception!', description:'Service offline!\\nRestarting in 10 minutes...', url: '', color: colorRed})
 				break;
 			case 'fruit':
 				targetChat = 'fruit'
 				if (resourceLocations.get(fruitRecourceId) === undefined || resourceLocations.get(fruitRecourceId)?.size === 0) {
 					content = format(webhookMessage, {title: "Traveler's Fruits", description:'**All fruits have been collected.**', url: '', color: colorYellow})
 				} else {
-					let desc = `> **Gatherable:** \`${data.length}\``
-					let bmUrl = ''
-					
+
 					const fruits = resourceLocations.get(fruitRecourceId)
 					if (!fruits) return;
+
+					let desc = `> **Gatherable:** \`${fruits.size}\``
+					let bmUrl = ''
 
 					for (const fruit of fruits?.values()) {
 						const [fX, fZ] = unpackLocation(fruit)
 						bmUrl += `[${fX},${fZ}],`
 						let near = undefined
 						let dist = 99999
-
+						
 						for (const waystone of waystoneLocations.keys()) {
 							const value = waystoneLocations.get(waystone);
 							if (!value) continue;
 							const [claimId, packedLocation] = value;
 							const [wX, wZ] = unpackLocation(packedLocation)
+
 							const wDist = Math.sqrt((fX - wX) ** 2 + (fZ - wZ) ** 2)
 							if (wDist < dist) {
 								dist = wDist
 								near = claimsWithWaystones.get(claimId)
 							}
 						}
-						desc += `\n\`N: ${(fZ/3).toFixed(0)} | E: ${(fX/3).toFixed(0)}\` (Near **${near}**)`
+						desc += `\\n\`N: ${(fZ/3).toFixed(0)} | E: ${(fX/3).toFixed(0)}\` (Near **${near}**)`
 					}
 					bmUrl = bmUrl.slice(0,-1)
-					content = format(webhookMessage, {title: "Traveler's Fruits", description: desc, url: format(fruitTrackerLink, {coodinates: bmUrl}), color: colorGreen})
+					
+					content = format(webhookMessage, {title: "Traveler's Fruits", description: desc, url: fruitTrackerLink + format(fruitTrackerURIComponent, {coordinates: bmUrl}), color: colorGreen})
 				}
 				break
 		}
 	} else {
 		targetChat = 'craft'
-		let desc = `**Owner:** \`${data.owner}\`\n**Empire:** \`${data.empire}\`\n**Effort:** \`${data.effort}\` (Tier ${data.tier})\n**Station:** \`${data.station}\`\n**Location:** ${data.location}`
+		let desc = ''
+		if (data.empire) desc = `**Owner:** \`${data.owner}\`\\n**Empire:** \`${data.empire}\`\\n**Effort:** \`${data.effort}\` (Tier ${data.tier})\\n**Station:** \`${data.station}\`\\n**Location:** \`${data.location}\``
+		else desc = `**Owner:** \`${data.owner}\`\\n**Effort:** \`${data.effort}\` (Tier ${data.tier})\\n**Station:** \`${data.station}\`\\n**Location:** \`${data.location}\``
+		
 		content = format(webhookMessage, {title: "Big Craft started!", description: desc, url: '', color: colorGreen})
 	}
-	
+
 	if (targetChat == 'craft' || targetChat == 'all') {
 		const response = await fetch(bigCraftWebhookLink!, { method: "POST", headers: { "Content-Type": "application/json" }, body: content })
-		if (!response.ok) console.log(c.red(`<<< Failed to send Webhook message:\n${response.statusText}`))
+		if (!response.ok) console.log(c.red(`<<< Failed to send Craft Webhook message: ${response.statusText}`))
+		else console.log(c.green("<<< Crafting Webhook message posted"))
 	}
 	
 	if (targetChat == 'fruit' || targetChat == 'all') {
 		const response = await fetch(fruitTrackerWebhookLink!, { method: "POST", headers: { "Content-Type": "application/json" }, body: content })
-		if (!response.ok) console.log(c.red(`<<< Failed to send Webhook message:\n${response.statusText}`))
+		if (!response.ok) console.log(c.red(`<<< Failed to send Fruit Webhook message: ${response.statusText}`))
+		else console.log(c.green("<<< Fruit Webhook message posted"))
 	}
 }
 
